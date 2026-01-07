@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gothwad Apps - Admin Control</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* -------------------------------------------------------------------------- */
+        /* 1. CSS VARIABLES & THEME ENGINE                                            */
+        /* -------------------------------------------------------------------------- */
+        :root {
+            /* Default: Dark Premium Tech */
+            --bg-body: #0f172a;
+            --bg-sidebar: #020617;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --border: #334155;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            --radius: 8px;
+            --header-h: 64px;
+            --sidebar-w: 260px;
+            --font-main: 'Inter', sans-serif;
+            --glass-blur: 0px;
+        }
+
+        /* Light Corporate Pro */
+        body.theme-light {
+            --bg-body: #f1f5f9;
+            --bg-sidebar: #ffffff;
+            --bg-card: #ffffff;
+            --bg-input: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --border: #cbd5e1;
+            --shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Glassmorphism Modern */
+        body.theme-glass {
+            --bg-body: linear-gradient(135deg, #111827, #374151);
+            --bg-sidebar: rgba(17, 24, 39, 0.7);
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --bg-input: rgba(0, 0, 0, 0.2);
+            --text-main: #ffffff;
+            --border: rgba(255, 255, 255, 0.1);
+            --glass-blur: 12px;
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Android Native Classic */
+        body.theme-android {
+            --bg-body: #f5f5f5;
+            --bg-sidebar: #ffffff;
+            --bg-card: #ffffff;
+            --bg-input: #eeeeee;
+            --text-main: #212121;
+            --primary: #6200ea;
+            --primary-dark: #3700b3;
+            --border: #e0e0e0;
+            --radius: 4px;
+            --font-main: 'Roboto', sans-serif;
+            --shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Font Overrides */
+        body.font-roboto { --font-main: 'Roboto', sans-serif; }
+        body.font-poppins { --font-main: 'Poppins', sans-serif; }
+        body.font-inter { --font-main: 'Inter', sans-serif; }
+
+        /* -------------------------------------------------------------------------- */
+        /* 2. BASE STYLES                                                             */
+        /* -------------------------------------------------------------------------- */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body {
+            background: var(--bg-body); color: var(--text-main); font-family: var(--font-main);
+            height: 100vh; overflow: hidden; font-size: 14px;
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        /* Layout Grid */
+        .layout { display: flex; height: 100%; width: 100%; position: relative; }
+        
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-w); background: var(--bg-sidebar); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; z-index: 50; transition: transform 0.3s;
+            backdrop-filter: blur(var(--glass-blur));
+        }
+        .brand {
+            height: var(--header-h); display: flex; align-items: center; padding: 0 20px;
+            font-size: 1.2rem; font-weight: 700; color: var(--primary); border-bottom: 1px solid var(--border);
+        }
+        .nav-scroll { flex: 1; overflow-y: auto; padding: 10px 0; }
+        .nav-item {
+            padding: 12px 20px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; gap: 12px;
+            transition: all 0.2s; font-weight: 500;
+        }
+        .nav-item:hover, .nav-item.active { background: rgba(59, 130, 246, 0.1); color: var(--primary); border-right: 3px solid var(--primary); }
+        .nav-group { padding: 10px 20px; font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); opacity: 0.7; margin-top: 10px; }
+
+        /* Main Content */
+        .main { flex: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        
+        /* Topbar */
+        .topbar {
+            height: var(--header-h); background: var(--bg-card); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+            backdrop-filter: blur(var(--glass-blur)); flex-shrink: 0;
+        }
+        .page-title { font-size: 1.1rem; font-weight: 600; }
+        .admin-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .avatar { width: 32px; height: 32px; background: var(--primary); border-radius: 50%; color: white; display: grid; place-items: center; font-weight: bold; }
+        
+        /* Content View */
+        .view-port { flex: 1; overflow-y: auto; padding: 20px; position: relative; }
+        .page { display: none; animation: fadeIn 0.3s; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: 0; } }
+
+        /* Components */
+        .card {
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow);
+            backdrop-filter: blur(var(--glass-blur));
+        }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        
+        .stat-box { display: flex; flex-direction: column; gap: 5px; }
+        .stat-val { font-size: 1.8rem; font-weight: 700; color: var(--text-main); }
+        .stat-lbl { font-size: 0.9rem; color: var(--text-muted); }
+
+        /* Tables & Lists */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; }
+        tr:hover { background: rgba(255,255,255,0.02); }
+
+        /* Buttons & Forms */
+        .btn {
+            padding: 8px 16px; border-radius: var(--radius); border: none; cursor: pointer; font-size: 0.9rem;
+            display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; font-weight: 500;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-outline { border: 1px solid var(--border); background: transparent; color: var(--text-main); }
+        .btn-sm { padding: 4px 10px; font-size: 0.8rem; }
+        .btn:active { transform: scale(0.98); }
+
+        .form-group { margin-bottom: 15px; }
+        .label { display: block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-muted); }
+        .input {
+            width: 100%; padding: 10px; background: var(--bg-input); border: 1px solid var(--border);
+            color: var(--text-main); border-radius: var(--radius); outline: none;
+        }
+        .input:focus { border-color: var(--primary); }
+
+        /* Badges */
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
+        .badge-green { background: rgba(16, 185, 129, 0.2); color: var(--accent); }
+        .badge-red { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .badge-blue { background: rgba(59, 130, 246, 0.2); color: var(--primary); }
+        .badge-yellow { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6);
+            z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+        }
+        .modal {
+            background: var(--bg-card); width: 90%; max-width: 500px; padding: 25px;
+            border-radius: var(--radius); border: 1px solid var(--border); max-height: 90vh; overflow-y: auto;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: 0; opacity: 1; } }
+
+        /* Login Screen */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-body); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+        .login-box { width: 100%; max-width: 400px; padding: 40px; background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border); text-align: center; }
+
+        /* Chat Specific */
+        .chat-window { height: 400px; display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--radius); }
+        .chat-msgs { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .chat-bubble { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 0.9rem; }
+        .chat-bubble.admin { align-self: flex-end; background: var(--primary); color: white; }
+        .chat-bubble.dev { align-self: flex-start; background: var(--bg-input); color: var(--text-main); }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar { position: absolute; transform: translateX(-100%); height: 100%; box-shadow: 2px 0 10px rgba(0,0,0,0.5); }
+            .sidebar.open { transform: translateX(0); }
+            .hamburger { display: block; cursor: pointer; font-size: 1.2rem; }
+        }
+        @media (min-width: 769px) { .hamburger { display: none; } }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 20px; right: 20px; background: var(--bg-card); border-left: 4px solid var(--primary); padding: 15px 20px; border-radius: 4px; box-shadow: var(--shadow); z-index: 3000; animation: slideIn 0.3s; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: 0; } }
+    </style>
+</head>
+<body class="theme-dark font-inter">
+
+    <!-- ---------------------------------------------------------------------- -->
+    <!-- LOGIN OVERLAY                                                          -->
+    <!-- ---------------------------------------------------------------------- -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h2 style="color: var(--primary); margin-bottom: 5px;">Gothwad Apps</h2>
+            <p class="text-muted" style="margin-bottom: 30px;">Central Command System</p>
+            <div class="form-group">
+                <input type="text" id="admin-id" class="input" placeholder="Admin ID">
+            </div>
+            <div class="form-group">
+                <input type="password" id="admin-pass" class="input" placeholder="Secure Password">
+            </div>
+            <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="Auth.login()">
+                <i class="fas fa-shield-alt"></i> Access Control
+            </button>
+            <p id="login-msg" style="color: var(--danger); margin-top: 15px; font-size: 0.9rem;"></p>
+        </div>
+    </div>
+
+    <!-- ---------------------------------------------------------------------- -->
+    <!-- APP LAYOUT                                                             -->
+    <!-- ---------------------------------------------------------------------- -->
+    <div class="layout">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="brand">
+                <i class="fas fa-layer-group" style="margin-right: 10px;"></i> GOTHWAD
+            </div>
+            <div class="nav-scroll">
+                <div class="nav-group">Main</div>
+                <div class="nav-item active" onclick="Router.go('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</div>
+                <div class="nav-item" onclick="Router.go('projects')"><i class="fas fa-project-diagram"></i> Projects</div>
+                <div class="nav-item" onclick="Router.go('developers')"><i class="fas fa-users-cog"></i> Developers</div>
+                
+                <div class="nav-group">Operations</div>
+                <div class="nav-item" onclick="Router.go('submissions')"><i class="fas fa-check-circle"></i> Submissions <span class="badge badge-red" id="badge-subs" style="margin-left:auto; display:none">0</span></div>
+                <div class="nav-item" onclick="Router.go('payments')"><i class="fas fa-wallet"></i> Payments</div>
+                <div class="nav-item" onclick="Router.go('chats')"><i class="fas fa-comments"></i> Communication</div>
+                
+                <div class="nav-group">System</div>
+                <div class="nav-item" onclick="Router.go('documents')"><i class="fas fa-file-contract"></i> Documents</div>
+                <div class="nav-item" onclick="Router.go('settings')"><i class="fas fa-cogs"></i> Settings</div>
+            </div>
+            <div style="padding: 20px; border-top: 1px solid var(--border);">
+                <button class="btn btn-outline" style="width: 100%;" onclick="Auth.logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main">
+            <!-- Topbar -->
+            <div class="topbar">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <i class="fas fa-bars hamburger" onclick="UI.toggleSidebar()"></i>
+                    <div class="page-title" id="page-title">Dashboard</div>
+                </div>
+                <div class="admin-profile">
+                    <div style="text-align: right; display: none; margin-right: 10px;" id="admin-name-display">
+                        <div style="font-weight: 600; font-size: 0.9rem;">Admin</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">CTO</div>
+                    </div>
+                    <div class="avatar">A</div>
+                </div>
+            </div>
+
+            <!-- Views -->
+            <div class="view-port">
+
+                <!-- 1. DASHBOARD -->
+                <div id="view-dashboard" class="page active">
+                    <div class="grid-4">
+                        <div class="card stat-box">
+                            <div class="stat-lbl">Active Developers</div>
+                            <div class="stat-val" style="color: var(--primary);" id="dash-devs">0</div>
+                        </div>
+                        <div class="card stat-box">
+                            <div class="stat-lbl">Running Projects</div>
+                            <div class="stat-val" style="color: var(--warning);" id="dash-projects">0</div>
+                        </div>
+                        <div class="card stat-box">
+                            <div class="stat-lbl">Pending Review</div>
+                            <div class="stat-val" style="color: var(--danger);" id="dash-reviews">0</div>
+                        </div>
+                        <div class="card stat-box">
+                            <div class="stat-lbl">Total Paid</div>
+                            <div class="stat-val" style="color: var(--accent);" id="dash-revenue">₹0</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3><i class="fas fa-bolt" style="color: var(--warning);"></i> Live Activity Feed</h3>
+                        <div id="activity-feed" style="margin-top: 15px; max-height: 300px; overflow-y: auto;">
+                            <!-- Injected via JS -->
+                            <p class="text-muted">System listening for events...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. DEVELOPERS -->
+                <div id="view-developers" class="page">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                        <h2>Developer Management</h2>
+                        <button class="btn btn-primary" onclick="Devs.openModal()"><i class="fas fa-plus"></i> Add Developer</button>
+                    </div>
+                    <div class="card table-container">
+                        <table id="dev-table">
+                            <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Skills</th><th>Actions</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 3. PROJECTS -->
+                <div id="view-projects" class="page">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                        <h2>Project Command</h2>
+                        <button class="btn btn-primary" onclick="Projects.openModal()"><i class="fas fa-plus"></i> New Project</button>
+                    </div>
+                    <div class="card table-container">
+                        <table id="proj-table">
+                            <thead><tr><th>Project</th><th>Client</th><th>Assigned To</th><th>Status</th><th>Deadline</th><th>Actions</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 4. SUBMISSIONS -->
+                <div id="view-submissions" class="page">
+                    <h2>Work Review Queue</h2>
+                    <div id="subs-list" style="margin-top: 20px;"></div>
+                </div>
+
+                <!-- 5. PAYMENTS -->
+                <div id="view-payments" class="page">
+                    <h2>Payroll & Payments</h2>
+                    <div class="card">
+                        <div class="form-group">
+                            <label class="label">Select Developer</label>
+                            <select id="pay-dev-select" class="input" onchange="Payments.loadHistory()">
+                                <option value="">-- Choose --</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" onclick="Payments.openModal()">Record New Payment</button>
+                    </div>
+                    <div class="card">
+                        <h3>Payment History</h3>
+                        <table id="pay-table">
+                            <thead><tr><th>Date</th><th>Title</th><th>Amount</th><th>Status</th></tr></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 6. CHATS -->
+                <div id="view-chats" class="page">
+                    <h2>Communication Hub</h2>
+                    <div style="display: grid; grid-template-columns: 250px 1fr; gap: 20px; height: 500px;">
+                        <div class="card" style="padding: 0; overflow-y: auto;">
+                            <div id="chat-users-list"></div>
+                        </div>
+                        <div class="card" style="display: flex; flex-direction: column;">
+                            <div id="chat-header" style="padding-bottom: 10px; border-bottom: 1px solid var(--border); font-weight: bold;">Select a conversation</div>
+                            <div id="chat-msgs" style="flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px;"></div>
+                            <div style="margin-top: 10px; display: flex; gap: 10px;">
+                                <input type="text" id="chat-input" class="input" placeholder="Type message...">
+                                <button class="btn btn-primary" onclick="Chat.send()"><i class="fas fa-paper-plane"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-top: 20px;">
+                        <h3>Global Announcement</h3>
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <input type="text" id="announce-text" class="input" placeholder="Announcement text...">
+                            <button class="btn btn-warning" onclick="Chat.postAnnouncement()">Broadcast</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. DOCUMENTS -->
+                <div id="view-documents" class="page">
+                    <h2>Identity Vault (Admin Only)</h2>
+                    <div class="form-group" style="max-width: 300px;">
+                        <select id="doc-dev-select" class="input" onchange="Docs.load()">
+                            <option value="">-- Select Developer --</option>
+                        </select>
+                    </div>
+                    <div id="doc-viewer" class="card" style="display: none;">
+                        <div class="grid-4">
+                            <div><label class="label">PAN Number</label><div class="input" readonly id="doc-pan"></div></div>
+                            <div><label class="label">Aadhaar (Masked)</label><div class="input" readonly id="doc-aadhaar"></div></div>
+                            <div><label class="label">Bank Name</label><div class="input" readonly id="doc-bank"></div></div>
+                            <div><label class="label">Account No</label><div class="input" readonly id="doc-acc"></div></div>
+                            <div><label class="label">IFSC Code</label><div class="input" readonly id="doc-ifsc"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8. SETTINGS -->
+                <div id="view-settings" class="page">
+                    <h2>System Control</h2>
+                    <div class="grid-4">
+                        <div class="card">
+                            <h3>Appearance</h3>
+                            <div class="form-group">
+                                <label class="label">Admin Theme</label>
+                                <select class="input" onchange="Settings.setTheme(this.value)">
+                                    <option value="theme-dark">Dark Premium Tech</option>
+                                    <option value="theme-light">Light Corporate Pro</option>
+                                    <option value="theme-glass">Glassmorphism Modern</option>
+                                    <option value="theme-android">Android Native Classic</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="label">Font Engine</label>
+                                <select class="input" onchange="Settings.setFont(this.value)">
+                                    <option value="font-inter">Inter</option>
+                                    <option value="font-roboto">Roboto</option>
+                                    <option value="font-poppins">Poppins</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Database</h3>
+                            <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="Settings.backup()"><i class="fas fa-download"></i> Download JSON Backup</button>
+                            <button class="btn btn-danger" style="width: 100%;" onclick="alert('Manual restore required via Firebase Console for security.')"><i class="fas fa-upload"></i> Restore DB</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ---------------------------------------------------------------------- -->
+    <!-- MODALS                                                                 -->
+    <!-- ---------------------------------------------------------------------- -->
+    
+    <!-- Developer Modal -->
+    <div class="modal-overlay" id="modal-dev">
+        <div class="modal">
+            <h3>Developer Details</h3>
+            <input type="hidden" id="md-uid">
+            <div class="form-group"><label class="label">Full Name</label><input type="text" id="md-name" class="input"></div>
+            <div class="form-group"><label class="label">Email</label><input type="email" id="md-email" class="input"></div>
+            <div class="form-group"><label class="label">Login ID</label><input type="text" id="md-loginid" class="input"></div>
+            <div class="form-group"><label class="label">Password</label><input type="text" id="md-pass" class="input"></div>
+            <div class="form-group"><label class="label">Skills</label><input type="text" id="md-skills" class="input"></div>
+            <div class="form-group"><label class="label">Status</label>
+                <select id="md-blocked" class="input">
+                    <option value="false">Active</option>
+                    <option value="true">Blocked</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="Devs.save()">Save Developer</button>
+                <button class="btn btn-outline" onclick="UI.closeModal('modal-dev')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div class="modal-overlay" id="modal-proj">
+        <div class="modal">
+            <h3>Project Manager</h3>
+            <input type="hidden" id="mp-id">
+            <div class="form-group"><label class="label">Project Name</label><input type="text" id="mp-name" class="input"></div>
+            <div class="form-group"><label class="label">Client Name</label><input type="text" id="mp-client" class="input"></div>
+            <div class="grid-4" style="grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group"><label class="label">Type</label><select id="mp-type" class="input"><option>Android App</option><option>Web App</option><option>Game</option></select></div>
+                <div class="form-group"><label class="label">Deadline</label><input type="date" id="mp-date" class="input"></div>
+            </div>
+            <div class="form-group"><label class="label">Assign To</label><select id="mp-assign" class="input"></select></div>
+            <div class="form-group"><label class="label">Instructions</label><textarea id="mp-instr" class="input" rows="3"></textarea></div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="Projects.save()">Create / Update</button>
+                <button class="btn btn-outline" onclick="UI.closeModal('modal-proj')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal-overlay" id="modal-pay">
+        <div class="modal">
+            <h3>Record Payment</h3>
+            <div class="form-group"><label class="label">Title / Project</label><input type="text" id="pay-title" class="input"></div>
+            <div class="form-group"><label class="label">Amount (₹)</label><input type="number" id="pay-amount" class="input"></div>
+            <div class="form-group"><label class="label">Status</label><select id="pay-status" class="input"><option value="paid">Paid</option><option value="pending">Pending</option></select></div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="Payments.save()">Save Record</button>
+                <button class="btn btn-outline" onclick="UI.closeModal('modal-pay')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ---------------------------------------------------------------------- -->
+    <!-- LOGIC SYSTEM                                                           -->
+    <!-- ---------------------------------------------------------------------- -->
+
+    <!-- Firebase SDK (Compatible v8 CDN) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        // 1. FIREBASE CONFIGURATION
+        // TODO: Replace with your actual Firebase Project Config
+       const firebaseConfig = {
+  apiKey: "AIzaSyCbeuOg_nTTFi_T3NP8S2IjhoShIp_OFFs",
+  authDomain: "gothwad-apps.firebaseapp.com",
+  databaseURL: "https://gothwad-apps-default-rtdb.firebaseio.com",
+  projectId: "gothwad-apps",
+  storageBucket: "gothwad-apps.firebasestorage.app",
+  messagingSenderId: "165464729658",
+  appId: "1:165464729658:web:d971f06aaa082d3d112d03",
+  measurementId: "G-76BVL84VY2"
+};
+
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 2. CORE UTILS & UI
+        const UI = {
+            toggleSidebar: () => document.getElementById('sidebar').classList.toggle('open'),
+            openModal: (id) => document.getElementById(id).style.display = 'flex',
+            closeModal: (id) => document.getElementById(id).style.display = 'none',
+            toast: (msg, type='info') => {
+                const d = document.createElement('div');
+                d.className = 'toast';
+                d.style.borderLeftColor = type === 'error' ? 'var(--danger)' : 'var(--primary)';
+                d.innerText = msg;
+                document.body.appendChild(d);
+                setTimeout(() => d.remove(), 3000);
+            },
+            el: (id) => document.getElementById(id),
+            setVal: (id, val) => document.getElementById(id).value = val,
+            getVal: (id) => document.getElementById(id).value,
+            renderTable: (id, data, rowBuilder) => {
+                const tbody = document.querySelector(`#${id} tbody`);
+                tbody.innerHTML = '';
+                data.forEach(item => tbody.appendChild(rowBuilder(item)));
+            }
+        };
+
+        const Router = {
+            go: (page) => {
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.getElementById('view-' + page).classList.add('active');
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                // Simple active logic
+                event.currentTarget.classList.add('active'); 
+                UI.el('page-title').innerText = page.charAt(0).toUpperCase() + page.slice(1);
+                
+                // Mobile close sidebar
+                document.getElementById('sidebar').classList.remove('open');
+            }
+        };
+
+        // 3. AUTHENTICATION (ADMIN)
+        const Auth = {
+            init: () => {
+                const sess = localStorage.getItem('gothwad_admin');
+                if(sess) {
+                    UI.el('login-screen').style.display = 'none';
+                    App.boot();
+                }
+            },
+            login: () => {
+                const id = UI.getVal('admin-id');
+                const pass = UI.getVal('admin-pass');
+                
+                db.ref('admin').once('value', snap => {
+                    const data = snap.val();
+                    // Fallback if DB is empty for first run
+                    if((data && data.id === id && data.password === pass) || (id === 'admin' && pass === 'admin123' && !data)) {
+                        localStorage.setItem('gothwad_admin', 'true');
+                        UI.el('login-screen').style.display = 'none';
+                        App.boot();
+                    } else {
+                        UI.el('login-msg').innerText = "Access Denied. Invalid Credentials.";
+                    }
+                });
+            },
+            logout: () => {
+                localStorage.removeItem('gothwad_admin');
+                location.reload();
+            }
+        };
+
+        // 4. MAIN APP LOGIC
+        const App = {
+            developers: {}, // Cache
+            projects: {},   // Cache
+            
+            boot: () => {
+                Devs.listen();
+                Projects.listen();
+                Submissions.listen();
+                Payments.listen();
+                Chat.listenList();
+                Settings.load();
+                
+                // Dashboard Activity Listener
+                db.ref('activities').limitToLast(10).on('child_added', s => {
+                    const act = s.val();
+                    const d = document.createElement('div');
+                    d.style.padding = '8px 0'; d.style.borderBottom = '1px solid var(--border)';
+                    d.innerHTML = `<i class="fas fa-circle" style="font-size:6px; color:var(--primary); margin-right:8px;"></i> ${act.text} <span style="float:right; font-size:0.7rem; color:var(--text-muted)">${new Date(act.ts).toLocaleTimeString()}</span>`;
+                    UI.el('activity-feed').prepend(d);
+                });
+            }
+        };
+
+        // 5. DEVELOPER MANAGEMENT (CRITICAL FIX FOR LOGIN ID)
+        const Devs = {
+            listen: () => {
+                db.ref('developers').on('value', snap => {
+                    const data = [];
+                    let active = 0;
+                    App.developers = {};
+                    
+                    snap.forEach(c => {
+                        const d = c.val();
+                        // IMPORTANT: Here the Key IS the login ID now
+                        d.uid = c.key; 
+                        App.developers[d.uid] = d;
+                        data.push(d);
+                        if(!d.blocked) active++;
+                    });
+                    
+                    UI.el('dash-devs').innerText = active;
+                    
+                    // Render Table
+                    UI.renderTable('dev-table', data, (d) => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><div style="font-weight:600">${d.name}</div><div style="font-size:0.8rem; color:var(--text-muted)">${d.loginId}</div></td>
+                            <td>${d.role || 'Developer'}</td>
+                            <td><span class="badge ${d.blocked ? 'badge-red' : 'badge-green'}">${d.blocked ? 'Blocked' : 'Active'}</span></td>
+                            <td>${d.skills || '-'}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick='Devs.edit("${d.uid}")'><i class="fas fa-edit"></i></button>
+                            </td>
+                        `;
+                        return tr;
+                    });
+
+                    // Update Selects
+                    const selects = [UI.el('mp-assign'), UI.el('pay-dev-select'), UI.el('doc-dev-select')];
+                    selects.forEach(sel => {
+                        sel.innerHTML = '<option value="">-- Select --</option>';
+                        data.forEach(d => {
+                            const opt = document.createElement('option');
+                            opt.value = d.uid;
+                            opt.innerText = d.name;
+                            sel.appendChild(opt);
+                        });
+                    });
+                });
+            },
+            openModal: () => {
+                UI.setVal('md-uid', '');
+                UI.setVal('md-name', '');
+                UI.setVal('md-email', '');
+                UI.setVal('md-loginid', '');
+                UI.el('md-loginid').disabled = false; // Enable for new
+                UI.setVal('md-pass', '');
+                UI.setVal('md-skills', '');
+                UI.setVal('md-blocked', 'false');
+                UI.openModal('modal-dev');
+            },
+            edit: (uid) => {
+                const d = App.developers[uid];
+                UI.setVal('md-uid', uid);
+                UI.setVal('md-name', d.name);
+                UI.setVal('md-email', d.email);
+                UI.setVal('md-loginid', d.loginId);
+                UI.el('md-loginid').disabled = true; // Cannot change ID once created
+                UI.setVal('md-pass', d.password);
+                UI.setVal('md-skills', d.skills);
+                UI.setVal('md-blocked', d.blocked ? 'true' : 'false');
+                UI.openModal('modal-dev');
+            },
+            save: () => {
+                // FIXED LOGIC HERE: Use Login ID as the Firebase Key
+                const loginId = UI.getVal('md-loginid').trim();
+                const existingUid = UI.getVal('md-uid');
+                
+                if(!loginId) return UI.toast("Login ID is required", "error");
+
+                const data = {
+                    name: UI.getVal('md-name'),
+                    email: UI.getVal('md-email'),
+                    loginId: loginId,
+                    password: UI.getVal('md-pass'),
+                    skills: UI.getVal('md-skills'),
+                    blocked: UI.getVal('md-blocked') === 'true'
+                };
+                
+                // If editing, use existing key. If new, use the typed loginId as the key.
+                const targetKey = existingUid || loginId;
+                
+                // Using SET to ensure the key is exactly what we typed
+                db.ref('developers/' + targetKey).update(data).then(() => {
+                    UI.closeModal('modal-dev');
+                    UI.toast('Developer Saved Successfully', 'success');
+                }).catch(err => {
+                    UI.toast("Error saving: " + err.message, "error");
+                });
+            }
+        };
+
+        // 6. PROJECTS & ASSIGNMENTS
+        const Projects = {
+            listen: () => {
+                // We need to join projects with assignments roughly
+                db.ref('projectAssignments').on('value', aSnap => {
+                    db.ref('projects').once('value', pSnap => {
+                        const assignments = aSnap.val() || {};
+                        const projects = pSnap.val() || {};
+                        const list = [];
+                        let running = 0;
+
+                        // Create merged view
+                        Object.keys(assignments).forEach(key => {
+                            const a = assignments[key];
+                            const p = projects[a.projectId];
+                            if(p) {
+                                list.push({ ...p, ...a, key: key }); // key is assignment ID
+                                if(a.status === 'active' || a.status === 'pending') running++;
+                            }
+                        });
+                        
+                        UI.el('dash-projects').innerText = running;
+
+                        UI.renderTable('proj-table', list, (item) => {
+                            const devName = App.developers[item.devId]?.name || 'Unknown';
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td><div style="font-weight:600">${item.name}</div></td>
+                                <td>${item.clientName}</td>
+                                <td>${devName}</td>
+                                <td><span class="badge badge-blue">${item.status}</span></td>
+                                <td>${item.deadline}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger" onclick="Projects.delete('${item.projectId}', '${item.key}')"><i class="fas fa-trash"></i></button>
+                                </td>
+                            `;
+                            return tr;
+                        });
+                    });
+                });
+            },
+            openModal: () => {
+                UI.setVal('mp-id', ''); // Create mode
+                UI.openModal('modal-proj');
+            },
+            save: () => {
+                // 1. Create Project Meta
+                const pData = {
+                    name: UI.getVal('mp-name'),
+                    clientName: UI.getVal('mp-client'),
+                    type: UI.getVal('mp-type'),
+                    deadline: UI.getVal('mp-date'),
+                    instructions: UI.getVal('mp-instr')
+                };
+                
+                const pRef = db.ref('projects').push();
+                pRef.set(pData).then(() => {
+                    // 2. Create Assignment
+                    const devId = UI.getVal('mp-assign');
+                    if(devId) {
+                        db.ref('projectAssignments').push({
+                            projectId: pRef.key,
+                            devId: devId,
+                            status: 'active',
+                            progress: 0,
+                            assignedAt: firebase.database.ServerValue.TIMESTAMP
+                        });
+                    }
+                    UI.closeModal('modal-proj');
+                    UI.toast('Project Created & Assigned');
+                });
+            },
+            delete: (pid, aid) => {
+                if(confirm('Delete project permanently?')) {
+                    db.ref('projects/' + pid).remove();
+                    db.ref('projectAssignments/' + aid).remove();
+                }
+            }
+        };
+
+        // 7. SUBMISSIONS
+        const Submissions = {
+            listen: () => {
+                db.ref('submissions').orderByChild('status').equalTo('submitted').on('value', snap => {
+                    const box = UI.el('subs-list');
+                    box.innerHTML = '';
+                    let count = 0;
+                    
+                    if(snap.exists()){
+                        snap.forEach(c => {
+                            count++;
+                            const s = c.val();
+                            const dev = App.developers[s.devId]?.name || 'Unknown';
+                            
+                            const div = document.createElement('div');
+                            div.className = 'card';
+                            div.innerHTML = `
+                                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                                    <b>Work Submission</b>
+                                    <span class="badge badge-yellow">Needs Review</span>
+                                </div>
+                                <p class="text-muted">Developer: ${dev}</p>
+                                <div style="margin:10px 0; background:var(--bg-input); padding:10px; border-radius:4px; word-break:break-all;">
+                                    APK: <a href="${s.apkUrl}" target="_blank">${s.apkUrl}</a><br>
+                                    Source: <a href="${s.sourceUrl}" target="_blank">${s.sourceUrl}</a>
+                                </div>
+                                <div style="display:flex; gap:10px;">
+                                    <button class="btn btn-sm btn-primary" onclick="Submissions.act('${c.key}', '${s.projectId}', 'approved')">Approve</button>
+                                    <button class="btn btn-sm btn-danger" onclick="Submissions.act('${c.key}', '${s.projectId}', 'rejected')">Reject</button>
+                                </div>
+                            `;
+                            box.appendChild(div);
+                        });
+                    } else {
+                        box.innerHTML = '<p class="text-muted">No pending submissions.</p>';
+                    }
+                    
+                    UI.el('dash-reviews').innerText = count;
+                    if(count > 0) {
+                        UI.el('badge-subs').style.display = 'inline-block';
+                        UI.el('badge-subs').innerText = count;
+                    } else {
+                        UI.el('badge-subs').style.display = 'none';
+                    }
+                });
+            },
+            act: (key, pid, status) => {
+                // Update submission status
+                db.ref('submissions/' + key).update({ status: status });
+                // If approved, find assignment and mark completed
+                if(status === 'approved') {
+                    db.ref('projectAssignments').orderByChild('projectId').equalTo(pid).once('value', snap => {
+                        snap.forEach(c => c.ref.update({ status: 'completed', progress: 100 }));
+                    });
+                    UI.toast('Project Marked Completed');
+                } else {
+                    // Reset assignment to pending/active logic if needed
+                    UI.toast('Submission Rejected');
+                }
+            }
+        };
+
+        // 8. PAYMENTS
+        const Payments = {
+            listen: () => {
+                // Global revenue stat
+                db.ref('payments').on('value', snap => {
+                    let total = 0;
+                    snap.forEach(devSnap => {
+                        devSnap.forEach(pSnap => {
+                            const p = pSnap.val();
+                            if(p.status === 'paid') total += parseFloat(p.amount);
+                        });
+                    });
+                    UI.el('dash-revenue').innerText = '₹' + total;
+                });
+            },
+            loadHistory: () => {
+                const devId = UI.getVal('pay-dev-select');
+                if(!devId) return;
+                
+                db.ref(`payments/${devId}`).on('value', snap => {
+                    const data = [];
+                    snap.forEach(c => data.push(c.val()));
+                    UI.renderTable('pay-table', data, (p) => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${new Date(p.date).toLocaleDateString()}</td>
+                            <td>${p.title}</td>
+                            <td>₹${p.amount}</td>
+                            <td><span class="badge ${p.status==='paid'?'badge-green':'badge-yellow'}">${p.status}</span></td>
+                        `;
+                        return tr;
+                    });
+                });
+            },
+            openModal: () => {
+                if(!UI.getVal('pay-dev-select')) return alert('Select a developer first');
+                UI.openModal('modal-pay');
+            },
+            save: () => {
+                const devId = UI.getVal('pay-dev-select');
+                db.ref(`payments/${devId}`).push({
+                    title: UI.getVal('pay-title'),
+                    amount: UI.getVal('pay-amount'),
+                    status: UI.getVal('pay-status'),
+                    date: firebase.database.ServerValue.TIMESTAMP
+                }).then(() => {
+                    UI.closeModal('modal-pay');
+                    UI.toast('Payment Recorded');
+                });
+            }
+        };
+
+        // 9. CHATS
+        const Chat = {
+            currentDev: null,
+            listenList: () => {
+                db.ref('developers').on('value', snap => {
+                    const list = UI.el('chat-users-list');
+                    list.innerHTML = '';
+                    snap.forEach(c => {
+                        const d = c.val();
+                        // Key is now the loginID directly
+                        const devId = c.key; 
+                        const div = document.createElement('div');
+                        div.style.padding = '15px';
+                        div.style.borderBottom = '1px solid var(--border)';
+                        div.style.cursor = 'pointer';
+                        div.innerHTML = `<b>${d.name}</b>`;
+                        div.onclick = () => Chat.open(devId, d.name);
+                        list.appendChild(div);
+                    });
+                });
+            },
+            open: (devId, name) => {
+                Chat.currentDev = devId;
+                UI.el('chat-header').innerText = `Chat with ${name}`;
+                const box = UI.el('chat-msgs');
+                
+                db.ref(`chats/support/${devId}`).limitToLast(50).on('value', snap => {
+                    box.innerHTML = '';
+                    snap.forEach(c => {
+                        const m = c.val();
+                        const div = document.createElement('div');
+                        div.className = `chat-bubble ${m.sender === 'admin' ? 'admin' : 'dev'}`;
+                        div.innerText = m.text;
+                        box.appendChild(div);
+                    });
+                    box.scrollTop = box.scrollHeight;
+                });
+            },
+            send: () => {
+                if(!Chat.currentDev) return;
+                const txt = UI.getVal('chat-input');
+                if(!txt) return;
+                
+                db.ref(`chats/support/${Chat.currentDev}`).push({
+                    sender: 'admin',
+                    text: txt,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+                UI.setVal('chat-input', '');
+            },
+            postAnnouncement: () => {
+                const txt = UI.getVal('announce-text');
+                if(!txt) return;
+                db.ref('announcements').push({
+                    text: txt,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+                UI.toast('Announcement Sent');
+                UI.setVal('announce-text', '');
+            }
+        };
+
+        // 10. DOCUMENTS & SETTINGS
+        const Docs = {
+            load: () => {
+                const devId = UI.getVal('doc-dev-select');
+                if(!devId) { UI.el('doc-viewer').style.display = 'none'; return; }
+                
+                db.ref(`developers/${devId}/bank`).once('value', snap => {
+                    const d = snap.val();
+                    if(d) {
+                        UI.el('doc-viewer').style.display = 'block';
+                        UI.el('doc-bank').innerText = d.name || '-';
+                        UI.el('doc-acc').innerText = d.account || '-';
+                        UI.el('doc-ifsc').innerText = d.ifsc || '-';
+                        // Mock Identity Data (Real app should pull from secure node)
+                        UI.el('doc-pan').innerText = "ABCDE1234F"; 
+                        UI.el('doc-aadhaar').innerText = "XXXX-XXXX-9876";
+                    } else {
+                        UI.el('doc-viewer').style.display = 'none';
+                        UI.toast('No documents found', 'error');
+                    }
+                });
+            }
+        };
+
+        const Settings = {
+            load: () => {
+                const t = localStorage.getItem('admin_theme') || 'theme-dark';
+                const f = localStorage.getItem('admin_font') || 'font-inter';
+                Settings.setTheme(t);
+                Settings.setFont(f);
+            },
+            setTheme: (t) => {
+                document.body.className = document.body.className.replace(/theme-\w+/, t);
+                localStorage.setItem('admin_theme', t);
+            },
+            setFont: (f) => {
+                document.body.className = document.body.className.replace(/font-\w+/, f);
+                localStorage.setItem('admin_font', f);
+            },
+            backup: () => {
+                db.ref('/').once('value', snap => {
+                    const data = JSON.stringify(snap.val());
+                    const blob = new Blob([data], {type: 'application/json'});
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `gothwad_backup_${Date.now()}.json`;
+                    a.click();
+                });
+            }
+        };
+
+        // Initialize
+        window.onload = Auth.init;
+
+    </script>
+</body>
+</html>
