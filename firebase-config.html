@@ -1,0 +1,28 @@
+// --------------------------------------------------------------------------
+// FIREBASE CONFIGURATION FILE (UPDATED - DEV ENV)
+// Project: Gothwad Apps Limited
+// --------------------------------------------------------------------------
+
+// New Configuration (Dev Environment)
+const firebaseConfig = {
+  apiKey: "AIzaSyCBE2hd6mjt_1RkxkzKZGAWriy4hAr467c",
+  authDomain: "gothwad-apps-dev.firebaseapp.com",
+  projectId: "gothwad-apps-dev",
+  storageBucket: "gothwad-apps-dev.firebasestorage.app",
+  messagingSenderId: "999086906598",
+  appId: "1:999086906598:web:4c52c361410909fbd72f27"
+};
+
+// Initialize Firebase (Singleton Pattern to prevent duplicate init errors)
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+    console.log("%c Gothwad Apps: Connected to DEV Database ", "background: #10b981; color: white; padding: 4px; border-radius: 4px;");
+} else {
+    firebase.app(); // if already initialized, use that one
+}
+
+// Export Database Instance
+const db = firebase.database();
+
+// Optional: Enable offline support (experimental for standard web SDK)
+// firebase.database().goOnline();
