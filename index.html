@@ -2,145 +2,642 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Welcome - Gothwad Apps</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    <title>Gothwad Admin v4.0</title>
     
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
+        /* -------------------------------------------------------------------------- */
+        /* 1. NATIVE CORE THEME                                                       */
+        /* -------------------------------------------------------------------------- */
         :root {
-            --bg-body: #0f172a;
-            --primary: #3b82f6;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --bg-app: #000000;
+            --bg-card: #111111;
+            --bg-nav: rgba(10, 10, 10, 0.95);
+            --primary: #3b82f6; --primary-glow: rgba(59, 130, 246, 0.4);
+            --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+            --text-main: #ffffff; --text-muted: #9ca3af;
+            --glass: blur(20px);
+            --radius: 20px;
+            --safe-top: env(safe-area-inset-top);
+            --safe-bottom: env(safe-area-inset-bottom);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-
-        body {
-            background-color: var(--bg-body);
-            background-image: radial-gradient(circle at center, #1e293b 0%, #0f172a 70%);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            color: var(--text-main);
-        }
-
-        /* Container Animation */
-        .splash-container {
-            text-align: center;
-            animation: fadeIn 1s ease-out;
-        }
-
-        /* Logo Icon */
-        .logo-box {
-            width: 90px;
-            height: 90px;
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            border-radius: 24px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            color: white;
-            box-shadow: 0 0 40px rgba(59, 130, 246, 0.4);
-            margin-bottom: 25px;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        /* Typography */
-        h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-            background: linear-gradient(to right, #fff, #94a3b8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        p {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            font-weight: 400;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            opacity: 0.8;
-        }
-
-        /* Loading Bar */
-        .loader-track {
-            width: 200px;
-            height: 4px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 4px;
-            margin: 40px auto 0;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .loader-fill {
-            height: 100%;
-            background: var(--primary);
-            width: 0%;
-            border-radius: 4px;
-            animation: loadProgress 2.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-            box-shadow: 0 0 10px var(--primary);
-        }
-
-        /* Footer */
-        .footer {
-            position: absolute;
-            bottom: 30px;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            opacity: 0.5;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
+        body { background: var(--bg-app); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        
+        .hidden { display: none !important; }
+        ::-webkit-scrollbar { display: none; }
 
         /* Animations */
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
-        @keyframes loadProgress { 0% { width: 0%; } 100% { width: 100%; } }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes slideRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+        
+        /* -------------------------------------------------------------------------- */
+        /* 2. APP COMPONENTS                                                          */
+        /* -------------------------------------------------------------------------- */
+        /* Header */
+        .app-header {
+            padding: 15px 20px; padding-top: max(15px, var(--safe-top));
+            background: rgba(10, 10, 10, 0.8); backdrop-filter: var(--glass);
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #222;
+        }
+        .search-bar { flex: 1; margin: 0 15px; position: relative; }
+        .search-inp { width: 100%; background: #1a1a1a; border: 1px solid #333; padding: 10px 15px 10px 35px; border-radius: 12px; color: white; outline: none; transition: 0.3s; }
+        .search-inp:focus { border-color: var(--primary); }
+        .search-icon { position: absolute; left: 12px; top: 12px; color: var(--text-muted); font-size: 0.8rem; }
+
+        /* View Container */
+        .view-container { flex: 1; overflow-y: auto; position: relative; scroll-behavior: smooth; }
+        .view { display: none; padding: 20px; padding-bottom: 120px; animation: fadeIn 0.3s; }
+        .view.active { display: block; }
+
+        /* Pull to Refresh Spinner */
+        .refresher { height: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; transition: 0.3s; color: var(--primary); }
+
+        /* Cards */
+        .card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; margin-bottom: 15px; border: 1px solid #222; position: relative; transition: 0.2s; }
+        .card:active { background: #1a1a1a; transform: scale(0.98); }
+        .card-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+
+        /* Detail View Overlay (Full Screen Slide-in) */
+        .detail-view {
+            position: fixed; inset: 0; background: var(--bg-app); z-index: 200;
+            display: flex; flex-direction: column; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .detail-view.open { transform: translateX(0); }
+        .dv-header { padding: 20px; padding-top: max(20px, var(--safe-top)); display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #222; }
+        .dv-content { padding: 20px; overflow-y: auto; flex: 1; }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 80px;
+            background: var(--bg-nav); backdrop-filter: var(--glass);
+            display: flex; justify-content: space-around; align-items: center;
+            border-top: 1px solid #222; padding-bottom: var(--safe-bottom); z-index: 100;
+        }
+        .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); font-size: 0.7rem; width: 60px; transition: 0.3s; }
+        .nav-btn i { font-size: 1.4rem; padding: 5px; border-radius: 20px; transition: 0.3s; }
+        .nav-btn.active { color: var(--primary); }
+        .nav-btn.active i { background: rgba(59, 130, 246, 0.15); transform: translateY(-5px); }
+
+        .fab {
+            width: 60px; height: 60px; background: var(--primary); border-radius: 50%;
+            display: grid; place-items: center; color: white; font-size: 1.6rem;
+            position: relative; top: -30px; box-shadow: 0 10px 25px var(--primary-glow);
+            border: 4px solid var(--bg-app); cursor: pointer; transition: 0.3s;
+        }
+        .fab:active { transform: rotate(45deg) scale(0.9); }
+
+        /* Modals (Bottom Sheet) */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 500; display: none; align-items: flex-end; backdrop-filter: blur(5px); }
+        .bottom-sheet { width: 100%; background: #161616; border-radius: 30px 30px 0 0; padding: 25px; max-height: 85vh; overflow-y: auto; animation: slideUp 0.3s; border-top: 1px solid #333; }
+        
+        /* Chat UI */
+        .chat-bubble { padding: 10px 15px; border-radius: 15px; max-width: 80%; margin-bottom: 10px; font-size: 0.9rem; }
+        .chat-in { background: #222; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .chat-out { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+
+        /* Utils */
+        .tag { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; display: inline-block; font-weight: 500; }
+        .tag-green { background: #064e3b; color: #34d399; }
+        .tag-red { background: #450a0a; color: #f87171; }
+        .tag-blue { background: #1e3a8a; color: #60a5fa; }
+        
+        /* Toast */
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #222; border: 1px solid #333; color: white; padding: 12px 25px; border-radius: 30px; z-index: 1000; display: flex; align-items: center; gap: 10px; transition: 0.4s; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .toast.show { transform: translateX(-50%) translateY(0); }
 
     </style>
 </head>
 <body>
 
-    <div class="splash-container">
-        <div class="logo-box">
-            <i class="fas fa-shield-alt"></i>
-        </div>
-        <h1>Gothwad Apps</h1>
-        <p>Pvt. Ltd. Admin Control</p>
+    <!-- 1. SPLASH SCREEN -->
+    <div id="splash-screen" style="position:fixed; inset:0; background:black; z-index:3000; display:flex; justify-content:center; align-items:center; flex-direction:column;">
+        <i class="fas fa-shield-alt fa-3x" style="color:var(--primary); animation:pulse 2s infinite"></i>
+        <h2 style="margin-top:20px;">Gothwad Apps</h2>
+        <p style="color:#666; font-size:0.8rem;">v4.0 Admin Pro</p>
+    </div>
 
-        <div class="loader-track">
-            <div class="loader-fill"></div>
+    <!-- 2. LOGIN -->
+    <div id="login-screen" class="hidden" style="position:fixed; inset:0; background:black; z-index:2000; padding:30px; display:flex; flex-direction:column; justify-content:center;">
+        <div class="card" style="border-radius:30px; padding:30px;">
+            <h2>Welcome Back</h2>
+            <p style="color:#666; margin-bottom:30px;">Authenticate to continue</p>
+            <input id="log-email" style="width:100%; padding:15px; background:#222; border:1px solid #333; color:white; border-radius:12px; margin-bottom:15px;" placeholder="Email">
+            <input id="log-pass" type="password" style="width:100%; padding:15px; background:#222; border:1px solid #333; color:white; border-radius:12px; margin-bottom:20px;" placeholder="Password">
+            <button onclick="Auth.login()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:12px; font-weight:600;">Secure Login</button>
         </div>
     </div>
 
-    <div class="footer">
-        Initializing Secure Environment...
+    <!-- 3. TOAST -->
+    <div id="toast" class="toast"><i class="fas fa-check-circle" style="color:var(--success)"></i><span id="toast-msg">Success</span></div>
+
+    <!-- 4. APP SHELL -->
+    <div id="app-shell" class="hidden">
+        
+        <!-- HEADER -->
+        <div class="app-header">
+            <div onclick="Nav.go('dashboard')"><i class="fas fa-bolt" style="color:var(--primary); font-size:1.5rem;"></i></div>
+            <div class="search-bar">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-inp" placeholder="Search anything..." onkeyup="Search.run(this.value)">
+            </div>
+            <div class="avatar" style="width:35px; height:35px; background:linear-gradient(45deg,#3b82f6,#8b5cf6); border-radius:50%; display:grid; place-items:center;" onclick="UI.openSheet('profileSheet')">A</div>
+        </div>
+
+        <!-- REFRESHER -->
+        <div class="refresher" id="refresher"><i class="fas fa-spinner fa-spin"></i></div>
+
+        <!-- VIEW CONTAINER -->
+        <div class="view-container">
+
+            <!-- VIEW: DASHBOARD -->
+            <div id="view-dashboard" class="view active">
+                <!-- Stats Rail -->
+                <div style="display:flex; gap:15px; overflow-x:auto; margin-bottom:20px; padding-bottom:5px;">
+                    <div class="card" style="min-width:260px; background:linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); border:none;" onclick="UI.togglePrivacy()">
+                        <div style="display:flex; justify-content:space-between; opacity:0.8;"><span>Revenue</span><i class="fas fa-eye" id="eye-icon"></i></div>
+                        <div style="font-size:2rem; font-weight:700;" id="d-rev">₹0</div>
+                        <div style="font-size:0.75rem; opacity:0.8;">+15% vs last week</div>
+                    </div>
+                    <div class="card" style="min-width:260px;" onclick="Nav.go('projects')">
+                        <div style="color:#666;">Active Projects</div>
+                        <div style="font-size:2rem; font-weight:700; color:var(--warning);" id="d-proj">0</div>
+                        <span class="tag tag-blue">Manage</span>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="card">
+                    <h3 style="margin-bottom:15px;">Analytics</h3>
+                    <div id="mainChart"></div>
+                </div>
+
+                <!-- Activity -->
+                <h4 style="margin-bottom:15px; color:#666;">Recent Updates</h4>
+                <div id="feed-list"></div>
+            </div>
+
+            <!-- VIEW: CHATS -->
+            <div id="view-chats" class="view">
+                <h2 style="margin-bottom:15px;">Team Chat</h2>
+                <div id="chat-users-list"></div>
+            </div>
+
+            <!-- VIEW: PROJECTS (Grid) -->
+            <div id="view-projects" class="view">
+                <div style="display:flex; gap:10px; overflow-x:auto; margin-bottom:15px;">
+                    <div class="tag tag-blue" onclick="Projects.filter('all')">All</div>
+                    <div class="tag" style="background:#222" onclick="Projects.filter('Android')">Android</div>
+                    <div class="tag" style="background:#222" onclick="Projects.filter('Web')">Web</div>
+                    <div class="tag tag-red" onclick="Projects.filter('urgent')">Urgent</div>
+                </div>
+                <div id="project-list"></div>
+            </div>
+
+            <!-- VIEW: PAYMENTS -->
+            <div id="view-payments" class="view">
+                <div class="card" style="text-align:center;">
+                    <div style="color:#666;">Total Payout</div>
+                    <div style="font-size:2rem; font-weight:700; color:var(--success);" id="p-total">₹0</div>
+                </div>
+                <div id="pay-list"></div>
+            </div>
+
+            <!-- VIEW: SUBMISSIONS -->
+            <div id="view-submissions" class="view">
+                <h2 style="margin-bottom:20px;">Review Queue</h2>
+                <div id="sub-list"></div>
+            </div>
+
+        </div> <!-- End Container -->
+
+        <!-- BOTTOM NAV -->
+        <div class="bottom-nav">
+            <div class="nav-btn active" onclick="Nav.go('dashboard')"><i class="fas fa-home"></i>Home</div>
+            <div class="nav-btn" onclick="Nav.go('chats')"><i class="fas fa-comment-dots"></i>Chat</div>
+            <div class="fab" onclick="UI.openSheet('createSheet')"><i class="fas fa-plus"></i></div>
+            <div class="nav-btn" onclick="Nav.go('projects')"><i class="fas fa-layer-group"></i>Projects</div>
+            <div class="nav-btn" onclick="UI.openSheet('moreSheet')"><i class="fas fa-bars"></i>More</div>
+       </div>
+</div><!-- 5. DETAIL VIEW OVERLAY (Slide-in) -->
+    <div id="detail-overlay" class="detail-view">
+        <div class="dv-header">
+            <i class="fas fa-arrow-left fa-lg" onclick="UI.closeDetails()"></i>
+            <h3 id="dv-title">Details</h3>
+        </div>
+        <div class="dv-content" id="dv-body">
+            <!-- Dynamic Content -->
+        </div>
     </div>
 
+    <!-- 6. CHAT OVERLAY -->
+    <div id="chat-overlay" class="detail-view">
+        <div class="dv-header">
+            <i class="fas fa-arrow-left fa-lg" onclick="document.getElementById('chat-overlay').classList.remove('open')"></i>
+            <h3 id="chat-title">Chat</h3>
+        </div>
+        <div class="dv-content" id="chat-msgs" style="display:flex; flex-direction:column;"></div>
+        <div style="padding:15px; border-top:1px solid #333; display:flex; gap:10px; background:black;">
+            <input id="chat-inp" style="flex:1; background:#222; border:none; padding:10px; border-radius:20px; color:white;" placeholder="Type...">
+            <button onclick="Chat.send()" style="background:var(--primary); border:none; width:40px; height:40px; border-radius:50%; color:white;"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- 7. BOTTOM SHEETS (Modals) -->
+    
+    <!-- Create Menu -->
+    <div class="modal-overlay" id="createSheet" onclick="if(event.target===this) UI.closeSheet('createSheet')">
+        <div class="bottom-sheet">
+            <div style="width:40px; height:4px; background:#333; margin:0 auto 20px; border-radius:2px;"></div>
+            <h3>Quick Create</h3>
+            <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:15px; margin-top:20px;">
+                <div class="card" onclick="UI.openSheet('projForm')" style="text-align:center;"><i class="fas fa-folder fa-2x" style="color:var(--primary)"></i><br>Project</div>
+                <div class="card" onclick="UI.openSheet('devForm')" style="text-align:center;"><i class="fas fa-user-plus fa-2x" style="color:var(--success)"></i><br>Developer</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- More Menu (Right Tab) -->
+    <div class="modal-overlay" id="moreSheet" onclick="if(event.target===this) UI.closeSheet('moreSheet')">
+        <div class="bottom-sheet">
+            <h3>More Options</h3>
+            <div class="card" onclick="Nav.go('payments'); UI.closeSheet('moreSheet')"><i class="fas fa-wallet" style="margin-right:10px;"></i> Payments</div>
+            <div class="card" onclick="Nav.go('submissions'); UI.closeSheet('moreSheet')"><i class="fas fa-check-circle" style="margin-right:10px;"></i> Submissions</div>
+            <div class="card" onclick="Nav.go('developers'); UI.closeSheet('moreSheet')"><i class="fas fa-users" style="margin-right:10px;"></i> Developers List</div>
+            <div class="card" style="border-color:var(--danger); color:var(--danger)" onclick="Auth.logout()"><i class="fas fa-sign-out-alt"></i> Logout</div>
+        </div>
+    </div>
+
+    <!-- Forms (Project, Dev, Payment) -->
+    <div class="modal-overlay" id="projForm" onclick="if(event.target===this) UI.closeSheet('projForm')">
+        <div class="bottom-sheet">
+            <h3>New Project</h3>
+            <input id="np-name" class="app-inp" style="margin-bottom:10px;" placeholder="Project Name">
+            <input id="np-client" class="app-inp" style="margin-bottom:10px;" placeholder="Client">
+            <select id="np-type" class="app-inp" style="margin-bottom:10px; background:#1a1a1a"><option>Android App</option><option>Web App</option><option>Game</option></select>
+            <input id="np-date" type="date" class="app-inp" style="margin-bottom:10px;">
+            <input id="np-budget" type="number" class="app-inp" style="margin-bottom:10px;" placeholder="Budget (₹)">
+            <select id="np-dev" class="app-inp" style="margin-bottom:15px; background:#1a1a1a"><option>Loading...</option></select>
+            <button class="btn-main" onclick="Projects.save()">Create Project</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="devForm" onclick="if(event.target===this) UI.closeSheet('devForm')">
+        <div class="bottom-sheet">
+            <h3>Add Developer</h3>
+            <input id="nd-name" class="app-inp" style="margin-bottom:10px;" placeholder="Name">
+            <input id="nd-email" class="app-inp" style="margin-bottom:10px;" placeholder="Email">
+            <input id="nd-id" class="app-inp" style="margin-bottom:10px;" placeholder="Login ID">
+            <input id="nd-pass" class="app-inp" style="margin-bottom:10px;" placeholder="Password">
+            <input id="nd-skills" class="app-inp" style="margin-bottom:15px;" placeholder="Skills">
+            <button class="btn-main" onclick="Devs.save()">Onboard</button>
+        </div>
+    </div>
+
+    <!-- Action Sheet (Edit/Delete) -->
+    <div class="modal-overlay" id="actionSheet" onclick="if(event.target===this) UI.closeSheet('actionSheet')">
+        <div class="bottom-sheet">
+            <h3 id="act-title">Options</h3>
+            <input type="hidden" id="act-id"><input type="hidden" id="act-type">
+            <button class="btn-main" style="background:#222; margin-bottom:10px;" onclick="Logic.editItem()">Edit Item</button>
+            <button class="btn-main" style="background:var(--danger);" onclick="Logic.deleteItem()">Delete Item</button>
+        </div>
+    </div>
+
+    <!-- Receipt Modal -->
+    <div class="modal-overlay" id="receiptSheet" onclick="if(event.target===this) UI.closeSheet('receiptSheet')">
+        <div class="bottom-sheet" style="text-align:center;">
+            <i class="fas fa-check-circle fa-4x" style="color:var(--success); margin-bottom:15px;"></i>
+            <h2>Payment Successful</h2>
+            <h1 id="rcpt-amt" style="margin:20px 0;">₹0</h1>
+            <p id="rcpt-to" style="color:#666">To: Developer</p>
+            <button class="btn-main" style="margin-top:20px;" onclick="UI.toast('Invoice PDF Downloaded'); UI.closeSheet('receiptSheet')">Download Invoice</button>
+        </div>
+    </div>
+
+    <!-- 8. LOGIC KERNEL -->
     <script>
-        // Redirect Logic
-        window.onload = () => {
-            setTimeout(() => {
-                // Smooth fade out effect before redirect (Optional)
-                document.body.style.transition = "opacity 0.5s";
-                document.body.style.opacity = "0";
-                
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 500);
-
-            }, 2500); // 2.5s wait + 0.5s fade = 3 seconds total
+        const firebaseConfig = {
+            apiKey: "AIzaSyCBE2hd6mjt_1RkxkzKZGAWriy4hAr467c",
+            authDomain: "gothwad-apps-dev.firebaseapp.com",
+            projectId: "gothwad-apps-dev",
+            storageBucket: "gothwad-apps-dev.firebasestorage.app",
+            messagingSenderId: "999086906598",
+            appId: "1:999086906598:web:4c52c361410909fbd72f27"
         };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        // STATE
+        const State = { devs: {}, projects: [], privacy: false, currentChat: null };
+
+        // NAVIGATION
+        const Nav = {
+            go: (view) => {
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                document.getElementById('view-'+view).classList.add('active');
+                // Update Bottom Nav
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                const map = {'dashboard':0, 'chats':1, 'projects':3};
+                if(map[view] !== undefined) document.querySelectorAll('.nav-btn')[map[view]].classList.add('active');
+            }
+        };
+
+        // UI HELPERS
+        const UI = {
+            toast: (msg, type='success') => {
+                const t = document.getElementById('toast');
+                document.getElementById('toast-msg').innerText = msg;
+                t.querySelector('i').style.color = type==='error'? 'var(--danger)' : 'var(--success)';
+                t.classList.add('show'); navigator.vibrate?.(50);
+                setTimeout(() => t.classList.remove('show'), 3000);
+            },
+            openSheet: (id) => {
+                document.querySelectorAll('.modal-overlay').forEach(m => m.style.display='none'); // Close others
+                document.getElementById(id).style.display = 'flex';
+                if(id==='projForm') UI.fillDevs();
+            },
+            closeSheet: (id) => document.getElementById(id).style.display='none',
+            openDetails: (html) => {
+                document.getElementById('dv-body').innerHTML = html;
+                document.getElementById('detail-overlay').classList.add('open');
+            },
+            closeDetails: () => document.getElementById('detail-overlay').classList.remove('open'),
+            togglePrivacy: () => {
+                State.privacy = !State.privacy;
+                document.getElementById('d-rev').innerText = State.privacy ? '₹ ****' : '₹ ' + State.rev.toLocaleString();
+            },
+            fillDevs: () => {
+                let h = '<option value="">Select Dev</option>';
+                for(let k in State.devs) h += `<option value="${k}">${State.devs[k].name}</option>`;
+                document.getElementById('np-dev').innerHTML = h;
+            }
+        };
+
+        // AUTH
+        const Auth = {
+            init: () => {
+                setTimeout(() => document.getElementById('splash-screen').style.display='none', 2000);
+                auth.onAuthStateChanged(u => {
+                    if(u) { document.getElementById('login-screen').classList.add('hidden'); document.getElementById('app-shell').classList.remove('hidden'); document.getElementById('app-shell').style.opacity='1'; Data.listen(); }
+                    else { document.getElementById('login-screen').classList.remove('hidden'); }
+                });
+                // Auto Lock
+                let timer; const reset = () => { clearTimeout(timer); timer = setTimeout(() => { if(auth.currentUser) location.reload(); }, 600000); };
+                document.addEventListener('click', reset); reset();
+            },
+            login: () => {
+                const e = document.getElementById('log-email').value;
+                const p = document.getElementById('log-pass').value;
+                if(!e || !p) return UI.toast('Fill fields', 'error');
+                auth.signInWithEmailAndPassword(e, p).catch(err => {
+                    UI.toast('Auth Failed', 'error');
+                    document.querySelector('.login-card').style.animation = 'shake 0.4s';
+                });
+            },
+            logout: () => auth.signOut()
+        };
+
+        // DATA LOGIC
+        const Data = {
+            listen: () => {
+                // Devs
+                db.ref('developers').on('value', s => {
+                    State.devs = {};
+                    s.forEach(c => State.devs[c.key] = c.val());
+                    Devs.render();
+                });
+                // Projects
+                db.ref('projectAssignments').on('value', aSnap => {
+                    db.ref('projects').once('value', pSnap => {
+                        State.projects = [];
+                        const pd = pSnap.val() || {};
+                        aSnap.forEach(c => {
+                            const a = c.val();
+                            if(pd[a.projectId]) State.projects.push({...pd[a.projectId], ...a, key: c.key});
+                        });
+                        Projects.render();
+                    });
+                });
+                // Payments
+                db.ref('payments').on('value', s => {
+                    let t = 0; const list = document.getElementById('pay-list'); list.innerHTML='';
+                    s.forEach(d => d.forEach(p => {
+                        const pay = p.val();
+                        if(pay.status==='paid') t += parseFloat(pay.amount);
+                        list.innerHTML += `<div class="list-item" onclick="Payments.showReceipt('${pay.amount}', '${d.key}')">
+                            <div class="item-icon" style="color:var(--success)"><i class="fas fa-arrow-up"></i></div>
+                            <div class="item-meta"><div class="item-title">${pay.title}</div><div class="item-sub">${new Date(pay.date).toLocaleDateString()}</div></div>
+                            <div style="font-weight:700">₹${pay.amount}</div>
+                        </div>`;
+                    }));
+                    State.rev = t; document.getElementById('d-rev').innerText = '₹ '+t.toLocaleString();
+                    document.getElementById('p-total').innerText = '₹ '+t.toLocaleString();
+                });
+                // Submissions
+                db.ref('submissions').orderByChild('status').equalTo('submitted').on('value', s => {
+                    const l = document.getElementById('sub-list'); l.innerHTML='';
+                    if(!s.exists()) { l.innerHTML = '<div style="text-align:center; padding:30px; color:#666">No pending reviews</div>'; return; }
+                    s.forEach(c => {
+                        const sub = c.val();
+                        l.innerHTML += `<div class="card">
+                            <div style="font-weight:600; margin-bottom:5px;">${State.devs[sub.devId]?.name || 'Dev'}</div>
+                            <a href="${sub.apkUrl}" target="_blank" style="color:var(--primary)">Download APK</a>
+                            <div style="display:flex; gap:10px; margin-top:15px;">
+                                <button onclick="Submissions.act('${c.key}', '${sub.projectId}', 'approved')" style="flex:1; padding:10px; background:var(--success); border:none; border-radius:10px; color:white;">Approve</button>
+                                <button onclick="Submissions.act('${c.key}', '${sub.projectId}', 'rejected')" style="flex:1; padding:10px; background:var(--danger); border:none; border-radius:10px; color:white;">Reject</button>
+                            </div>
+                        </div>`;
+                    });
+                });
+                // Feed
+                db.ref('activities').limitToLast(10).on('value', s => {
+                    const l = document.getElementById('feed-list'); l.innerHTML='';
+                    const arr=[]; s.forEach(c=>arr.push(c.val()));
+                    arr.reverse().forEach(a => {
+                        l.innerHTML += `<div class="list-item" style="padding:10px;"><div class="item-meta"><div class="item-title">${a.text}</div><div class="item-sub">${new Date(a.ts).toLocaleTimeString()}</div></div></div>`;
+                    });
+                });
+                // Charts
+                new ApexCharts(document.querySelector("#mainChart"), {
+                    series: [{name:'Rev', data:[10,40,30,50,49,60,70,91]}],
+                    chart: {height:150, type:'area', toolbar:{show:false}, background:'transparent'},
+                    theme: {mode:'dark'}, stroke:{curve:'smooth'}, fill:{type:'gradient'}
+                }).render();
+            }
+        };
+
+        // FEATURE LOGIC
+        const Projects = {
+            render: () => {
+                const l = document.getElementById('project-list'); l.innerHTML = '';
+                document.getElementById('d-proj').innerText = State.projects.filter(p=>p.status==='active').length;
+                State.projects.forEach(p => {
+                    l.innerHTML += `<div class="card" onclick="Projects.open('${p.key}')" oncontextmenu="Logic.showActions('${p.key}', 'project'); return false;">
+                        <div style="display:flex; justify-content:space-between;">
+                            <div style="font-weight:600;">${p.name}</div>
+                            <span class="tag ${p.status==='active'?'tag-blue':'tag-green'}">${p.status}</span>
+                        </div>
+                        <div style="font-size:0.8rem; color:#888; margin-top:5px;">${p.clientName} • ${p.type}</div>
+                        <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+                            <div class="tag" style="background:#222">₹${p.budget}</div>
+                            <div style="font-size:0.7rem; color:${new Date(p.deadline)<new Date()?'var(--danger)':'#666'}">${new Date(p.deadline).toLocaleDateString()}</div>
+                        </div>
+                    </div>`;
+                });
+            },
+            save: () => {
+                const data = {
+                    name: document.getElementById('np-name').value,
+                    clientName: document.getElementById('np-client').value,
+                    type: document.getElementById('np-type').value,
+                    deadline: document.getElementById('np-date').value,
+                    budget: document.getElementById('np-budget').value
+                };
+                const dev = document.getElementById('np-dev').value;
+                if(!data.name || !dev) return UI.toast('Missing Info', 'error');
+                const ref = db.ref('projects').push();
+                ref.set(data).then(() => {
+                    db.ref('projectAssignments').push({projectId:ref.key, devId:dev, status:'active', progress:0});
+                    UI.closeSheet('projForm'); UI.toast('Project Created');
+                });
+            },
+            open: (key) => {
+                const p = State.projects.find(x => x.key === key);
+                UI.openDetails(`
+                    <h1>${p.name}</h1>
+                    <div class="tag tag-blue">${p.type}</div>
+                    <div style="margin-top:20px; background:#111; padding:20px; border-radius:20px;">
+                        <p>Client: ${p.clientName}</p>
+                        <p>Budget: ₹${p.budget}</p>
+                        <p>Deadline: ${p.deadline}</p>
+                        <p>Status: ${p.status}</p>
+                    </div>
+                    <button class="btn-main" style="margin-top:20px; background:#25D366" onclick="window.open('https://wa.me/?text=Update on ${p.name}')"><i class="fab fa-whatsapp"></i> WhatsApp Client</button>
+                `);
+            },
+            filter: (t) => {
+                const els = document.querySelectorAll('#project-list .card');
+                els.forEach(e => e.style.display = (t==='all' || e.innerText.includes(t)) ? 'block' : 'none');
+            }
+        };
+
+        const Devs = {
+            render: () => {
+                const l = document.getElementById('chat-users-list'); l.innerHTML = '';
+                let c = 0; const s = document.getElementById('dev-stack'); s.innerHTML='';
+                for(let k in State.devs) {
+                    const d = State.devs[k];
+                    if(!d.blocked) {
+                        c++;
+                        if(c<=3) s.innerHTML += `<div style="width:25px; height:25px; border-radius:50%; background:#444; margin-left:-8px; border:2px solid #1e1e1e; display:grid; place-items:center; font-size:0.6rem;">${d.name[0]}</div>`;
+                        l.innerHTML += `<div class="list-item" onclick="Chat.open('${k}')">
+                            <div class="item-icon"><i class="fas fa-user"></i></div>
+                            <div class="item-meta"><div class="item-title">${d.name}</div><div class="item-sub">Tap to chat</div></div>
+                        </div>`;
+                    }
+                }
+                document.getElementById('d-dev').innerText = c;
+            },
+            save: () => {
+                const id = document.getElementById('nd-id').value;
+                const data = { name: document.getElementById('nd-name').value, email: document.getElementById('nd-email').value, loginId: id, password: document.getElementById('nd-pass').value, skills: document.getElementById('nd-skills').value, blocked: false };
+                if(!id) return;
+                db.ref('developers/'+id).set(data).then(() => { UI.closeSheet('devForm'); UI.toast('Dev Added'); });
+            }
+        };
+
+        const Chat = {
+            open: (devId) => {
+                State.currentChat = devId;
+                document.getElementById('chat-title').innerText = State.devs[devId].name;
+                document.getElementById('chat-overlay').classList.add('open');
+                db.ref(`chats/support/${devId}`).limitToLast(20).on('value', s => {
+                    const b = document.getElementById('chat-msgs'); b.innerHTML = '';
+                    s.forEach(c => {
+                        const m = c.val();
+                        b.innerHTML += `<div class="chat-bubble ${m.sender==='admin'?'chat-out':'chat-in'}">${m.text}</div>`;
+                    });
+                });
+            },
+            send: () => {
+                const t = document.getElementById('chat-inp').value;
+                if(!t || !State.currentChat) return;
+                db.ref(`chats/support/${State.currentChat}`).push({sender:'admin', text:t, ts:Date.now()});
+                document.getElementById('chat-inp').value = '';
+            }
+        };
+
+        const Submissions = {
+            act: (key, pid, status) => {
+                db.ref('submissions/'+key).update({status:status});
+                if(status==='approved') {
+                    // Find assignment key to update
+                    const p = State.projects.find(x => x.projectId === pid);
+                    if(p) db.ref('projectAssignments/'+p.key).update({status:'completed', progress:100});
+                }
+                UI.toast(`Submission ${status}`);
+            }
+        };
+
+        const Payments = {
+            showReceipt: (amt, devKey) => {
+                document.getElementById('rcpt-amt').innerText = '₹' + amt;
+                document.getElementById('rcpt-to').innerText = 'To: ' + (State.devs[devKey]?.name || 'Developer');
+                UI.openSheet('receiptSheet');
+            }
+        };
+
+        const Search = {
+            run: (v) => {
+                if(!v) return;
+                const hit = State.projects.find(p => p.name.toLowerCase().includes(v.toLowerCase()));
+                if(hit) { Projects.open(hit.key); } else { UI.toast('No direct match found'); }
+            }
+        };
+
+        const Logic = {
+            showActions: (id, type) => {
+                document.getElementById('act-id').value = id;
+                document.getElementById('act-type').value = type;
+                UI.openSheet('actionSheet');
+                navigator.vibrate?.(50);
+            },
+            deleteItem: () => {
+                const id = document.getElementById('act-id').value;
+                const type = document.getElementById('act-type').value;
+                if(confirm('Delete permanently?')) {
+                    if(type==='project') db.ref('projectAssignments/'+id).remove(); // Logic simplified for assignment key
+                    UI.closeSheet('actionSheet');
+                    UI.toast('Deleted');
+                }
+            }
+        };
+
+        // START
+        window.onload = Auth.init;
+        // Pull to refresh sim
+        let startY;
+        document.addEventListener('touchstart', e => startY=e.touches[0].pageY);
+        document.addEventListener('touchmove', e => { if(window.scrollY===0 && e.touches[0].pageY-startY>50) document.getElementById('refresher').style.height='50px'; });
+        document.addEventListener('touchend', () => setTimeout(()=>document.getElementById('refresher').style.height='0', 1000));
+
     </script>
 </body>
 </html>
